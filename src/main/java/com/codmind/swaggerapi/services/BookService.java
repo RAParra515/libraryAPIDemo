@@ -8,7 +8,7 @@ import com.codmind.swaggerapi.repository.BookRepository;
 
 
 @Service
-public class BookService {
+public class BookService { 
 	
 	 @Autowired
 	 BookRepository repository;
@@ -22,8 +22,7 @@ public class BookService {
 		 }
 	 }
 	 
-	 public BookDTO updateBook(BookDTO bookDto) {
-		 
+	 public BookDTO updateBook(BookDTO bookDto) {		 
 		 if (repository.existsById(bookDto.getId())) {
 			 return repository.save(bookDto);			 
 		 } else {
