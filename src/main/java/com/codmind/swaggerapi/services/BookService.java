@@ -2,14 +2,19 @@ package com.codmind.swaggerapi.services;
 
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
 import com.codmind.swaggerapi.dto.BookDTO;
+import com.codmind.swaggerapi.entity.Book;
+import com.codmind.swaggerapi.exception.DachserException;
 import com.codmind.swaggerapi.repository.BookRepository;
 
 
@@ -22,41 +27,75 @@ public class BookService {
 	 @Autowired
 	 BookRepository repository;
 	 
-	 Locale locale = new Locale("es");
+	 @Autowired
+	 private Validator validator;	
+	 
+	
 		
+	 Locale locale = new Locale("en");
 	
 	 
-	 public BookDTO addBook(BookDTO bookDto) throws RuntimeException{
+	 public Book addBook(BookDTO bookDto) throws RuntimeException{
 		 
-		 if (repository.existsById(bookDto.getId())) {
-			 throw new RuntimeException( messageSource.getMessage("error.book.alreadyExist", null, locale)	);
-		 } else {
-			 return repository.save(bookDto);			 
-		 }
+	  Set<ConstraintViolation<BookDTO>> violations = validator.validate(bookDto);
+	   if (!violations.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for (ConstraintViolation<BookDTO> constraintViolation : violations) {
+                sb.append(constraintViolation.getMessage());
+            }
+            throw new ConstraintViolationException("Error occurred: " + sb.toString(), violations);
+        }		 
+		Book book = new Book();
+	   book.setCopys(bookDto.getCopys());
+	   book.setTitle(bookDto.getTitle());
+			 return repository.save(book);			 
+		
 	 }
 	 
-	 public BookDTO updateBook(BookDTO bookDto) {
+	 public Book updateBook(BookDTO bookDto,Integer bookId) {
 		 
-		 if (repository.existsById(bookDto.getId())) {
-			 return repository.save(bookDto);			 
+		 Set<ConstraintViolation<BookDTO>> violations = validator.validate(bookDto);
+		   if (!violations.isEmpty()) {
+	            StringBuilder sb = new StringBuilder();
+	            for (ConstraintViolation<BookDTO> constraintViolation : violations) {
+	                sb.append(constraintViolation.getMessage());
+	            }
+	            throw new ConstraintViolationException("Error occurred: " + sb.toString(), violations);
+	        }
+		   
+		   Book book = new Book();
+		 if (repository.existsById(bookId)) {
+			 book.setId(bookId);
+			 book.setCopys(bookDto.getCopys());
+			 book.setTitle(bookDto.getTitle());
+			 return repository.save(book);			 
 		 } else {
-			 throw new RuntimeException(messageSource.getMessage("error.book.notfound", null, locale));
+			 throw new DachserException(messageSource.getMessage("error.book.notfound", null, locale));
 		 }
 	 }
 	 
 	 public void deleteBook(Integer id) {		 
-	 
-		 repository.deleteById(id);
+	 try {
+		 repository.deleteById(id);		 
+	 }catch (Exception e){
+		 
+	 }
 		 
 	 }
 	 
-	 public Iterable<BookDTO> findAll(){
+	 public Iterable<Book> findAll(){
 		 
 		 return repository.findAll();
 		 
 	 }
-	 public Optional<BookDTO> findById(Integer id){		 
-		 return repository.findById(id);		 
+	 public Optional<Book> findById(Integer id){		 
+		 
+		 if(repository.existsById(id)) {
+			 return repository.findById(id);
+		 } else {
+			 throw new DachserException(messageSource.getMessage("error.book.notfound", null, locale));
+		 }
+		 
 	 }
 
 }

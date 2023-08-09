@@ -2,40 +2,26 @@ package com.codmind.swaggerapi.dto;
 
 import java.io.Serializable;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import io.swagger.annotations.ApiImplicitParam;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.stereotype.Component;
+
 import io.swagger.annotations.ApiParam;
-import lombok.Data;
-
-
-
-	@Entity
-	@Table(name="BOOK")
+import lombok.Data;	
+	
 	@Data	
-	public class BookDTO implements Serializable {		
-	 
-		private static final long serialVersionUID = -4799572182426202594L;
-
-		@Id		
-		@GeneratedValue(strategy=GenerationType.SEQUENCE)
-		@ApiParam(name="Identificador",value="Identificador del libro")
-		@NotEmpty(message = "El identificador debe estar informado")	
-		  
-		private Integer id;
-		  
-		@ApiParam(name="Titulo", value="Titulo del libro")	  
-		@NotEmpty(message = "El titulo del libro debe estar informado")	  
+	public class BookDTO implements Serializable {
+	
+		private static final long serialVersionUID = -6343055759648843235L;
+		
+		@ApiParam(name="Titulo", value="Titulo del libro")
+		@NotNull(message = "{book.title.notnull}")
 		private String title;	
 		  
 		@ApiParam(name="Copias", value="Número de copias del libro")
-		@NotEmpty(message = "El número de copias debe estar informado")	  
-		private Long copys;	  
+		@NotNull(message = "{book.copy.notnull}")		
+		private Integer copys;	  
 		  	
 }

@@ -6,16 +6,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
+
+import javax.transaction.Transactional;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validator;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
 
-import com.codmind.swaggerapi.dto.BookDTO;
 import com.codmind.swaggerapi.dto.RentalDTO;
+import com.codmind.swaggerapi.entity.Book;
+import com.codmind.swaggerapi.entity.Rental;
 import com.codmind.swaggerapi.exception.DachserException;
 import com.codmind.swaggerapi.repository.RentalRepository;
-import com.codmind.swaggerapi.request.dto.RentalRequestDTO;
+
 
 @Service
 public class RentalService {
@@ -31,83 +38,97 @@ public class RentalService {
 	@Autowired
 	BookService bookService;
 	
-	Integer copysRented = 0;
 	
-	public RentalDTO addRental(RentalRequestDTO rental) {
+	
+	@Autowired
+	private Validator validator;	
+	
+	Integer copysRented = 0;
+	@Transactional
+	public Rental addRental(RentalDTO rentalReq) {
+		copysRented=0;
+		
+		  Set<ConstraintViolation<RentalDTO>> violations = validator.validate(rentalReq);
+		   if (!violations.isEmpty()) {
+	            StringBuilder sb = new StringBuilder();
+	            for (ConstraintViolation<RentalDTO> constraintViolation : violations) {
+	                sb.append(constraintViolation.getMessage());
+	            }
+	            throw new ConstraintViolationException("Error occurred: " + sb.toString(), violations);
+	        }
 		 
-		 BookDTO book = new BookDTO();
+		 Book book =bookService.findById(rentalReq.getBook_id()).get(); 
 		 
-		 try {
-			 
-			 book = bookService.findById(rental.getBook_id()).get();
-			 
-		 } catch(Exception e) {
-			 
-			 throw new DachserException(messageSource.getMessage("error.book.notFound", null, locale));
-		 }
 		 
-		 Iterable<RentalDTO> source = repository.findAll();
+		 Iterable<Rental> source = repository.findAll();
 		 
-		 List<RentalDTO> rentals = new ArrayList<>();
+		 List<Rental> rentals = new ArrayList<>();
+		 Rental rental = new Rental();
 		 
-		 source.forEach(rentals::add);
-		 
-		 rentals.forEach( el->{
-			 
-			 if(el.getBook_id()==rental.getBook_id()) {
-				 if(el.getEnd().getYear()>LocalDate.now().getYear() && el.getEnd().getDayOfYear()>LocalDate.now().getDayOfYear()){
-					 copysRented++;				
+		 source.forEach(rentals::add);		 
+		 rentals.forEach( el->{		
+			
+			 if(el.getBook_id().equals(rentalReq.getBook_id())) {
+			
+				 if(el.getEnd().getYear()>LocalDate.now().getYear()) {
+					 copysRented++;
+				 } else if (el.getEnd().getYear()==LocalDate.now().getYear()) {
+					 if (el.getEnd().getDayOfYear()>=LocalDate.now().getDayOfYear())
+						 copysRented++;			
 				 }
 			 }
 		});
 		 
-		 if (repository.existsById(rental.getId())) {
-			 
-			  throw new DachserException(messageSource.getMessage("error.rental.alreadyExist", null, locale));
-			  
-         } else if ( copysRented >= book.getCopys() ) {
+		 
+		  if ( copysRented >= book.getCopys() ) {
         	 
-			  throw new DachserException(messageSource.getMessage("error.rental.notCopyAvailable", null, locale));
+			  throw new DachserException(messageSource.getMessage("error.rental.notcopyavailable", null, locale));
 			  
 		 } else {
 			 
-			  RentalDTO rentalDto = new RentalDTO();
-			  rentalDto.setBook_id(rental.getId());
+			  
+			  
 			  
 			  DateTimeFormatter formater = DateTimeFormatter.ISO_LOCAL_DATE;
 			  LocalDate dateIni = LocalDate.now();
-			  LocalDate dateFin = LocalDate.parse(rental.getEnd(), formater);
+			  LocalDate dateFin = LocalDate.parse(rentalReq.getEnd(), formater);
+			  rental.setBook_id(rentalReq.getBook_id());
+			  rental.setStart(dateIni);
+			  rental.setEnd(dateFin);			  
+			   		  
 			  
-			  rentalDto.setStart(dateIni);
-			  rentalDto.setEnd(dateFin);
 			  
-			  rentalDto.setId(rental.getId()); 		  
-			  book.setCopys(book.getCopys()-1);
-			  
-			  bookService.updateBook(book);
-			  
-			  return repository.save(rentalDto);	
+			  return repository.save(rental);	
 			  
 		  }
 	  }
 	  
-	  public RentalDTO updateRental(RentalRequestDTO rental) {
+	  public Rental updateRental(RentalDTO rentalReq,Integer id) {
 		  
-		  if (repository.existsById(rental.getId())) {
+		  Set<ConstraintViolation<RentalDTO>> violations = validator.validate(rentalReq);
+		   if (!violations.isEmpty()) {
+	            StringBuilder sb = new StringBuilder();
+	            for (ConstraintViolation<RentalDTO> constraintViolation : violations) {
+	                sb.append(constraintViolation.getMessage());
+	            }
+	            throw new ConstraintViolationException("Error occurred: " + sb.toString(), violations);
+	        }
+		  
+		  if (repository.existsById(id)) {
 			  
-			  RentalDTO rentalDto = new RentalDTO();			  
-			  rentalDto.setBook_id(rental.getId());
+			  Rental rental = new Rental();		  
+			  rental.setBook_id(rentalReq.getBook_id());
 			  
 			  DateTimeFormatter formater = DateTimeFormatter.ISO_LOCAL_DATE;
-			  LocalDate dateIni = LocalDate.parse(rental.getStart(), formater);
-			  LocalDate dateFin = LocalDate.parse(rental.getEnd(), formater);	
+			  //LocalDate dateIni = LocalDate.parse(rentalReq.getStart(), formater);
+			  LocalDate dateFin = LocalDate.parse(rentalReq.getEnd(), formater);	
 			  
 			  
-			  rentalDto.setStart(dateIni);
-			  rentalDto.setEnd(dateFin);
-			  rentalDto.setId(rental.getId());
+			  //rental.setStart(dateIni);
+			  rental.setEnd(dateFin);
+			  rental.setId(id);
 			  
-			  return repository.save(rentalDto);
+			  return repository.save(rental);
 			  
 		  } else {
 			  
@@ -118,23 +139,21 @@ public class RentalService {
 
 	  public void deleteRental(Integer id) {
 		  
-		  if (repository.existsById(id)) {
+		  try {
+			  repository.deleteById(id);	
 			  
-			  RentalDTO rental = findById(id).get();
-			  repository.deleteById(id);			  
-			  BookDTO book = bookService.findById(rental.getBook_id()).get();
-			  book.setCopys(book.getCopys()+1);
-			  bookService.updateBook(book);
-			  
-		  } 
+		  }catch (Exception e) {
+			// TODO: handle exception
+		}
+ 
 		  
 	  }
 	  
-	  public Iterable<RentalDTO> findAllRentals(){
+	  public Iterable<Rental> findAllRentals(){
 		   return repository.findAll();
 	  }
 	  
-	  public Optional<RentalDTO> findById(Integer id){		
+	  public Optional<Rental> findById(Integer id){		
 		  return repository.findById(id);
 	  }
 	  

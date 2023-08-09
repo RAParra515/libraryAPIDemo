@@ -22,10 +22,12 @@ public class RestResponseEntityExceptionHandler
     	if (ex.getClass().getName()=="com.codmind.swaggerapi.exception.DachserException") {
     	  String bodyOfResponse =  ex.getLocalizedMessage();
     	  return handleExceptionInternal(ex, bodyOfResponse, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
-    	} else {
-    		String bodyOfResponse = "Ooops . Se ha producido un error inesperado . Por favor pongase en contacto con el servicio tecnico. ";
+    	} else if (ex.getClass().getName()=="javax.validation.ConstraintViolationException") {
+    		String bodyOfResponse =  ex.getLocalizedMessage();
     		return handleExceptionInternal(ex, bodyOfResponse,	new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
-    		
+    	} else {
+    		String bodyOfResponse = "Ooops . An unexpected error has ocurred . Please contact an adminsitrator ";
+    		return handleExceptionInternal(ex, bodyOfResponse,	new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);    		
     	}
     }
   

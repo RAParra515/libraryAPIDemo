@@ -3,7 +3,6 @@ package com.codmind.swaggerapi.controllers;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +16,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.codmind.swaggerapi.dto.RentalDTO;
+import com.codmind.swaggerapi.entity.Rental;
 import com.codmind.swaggerapi.request.dto.RentalRequestDTO;
 import com.codmind.swaggerapi.services.RentalService;
+
 import io.swagger.annotations.ApiOperation;
 
 @RestController
@@ -29,30 +30,30 @@ public class RentalController {
 
 	@ApiOperation(value = "retrieves a list of al rentals", notes = "retrieves a list of al rentals")
 	@GetMapping(value = "rentals")
-	public ResponseEntity<List<RentalDTO>> findAll(){
+	public ResponseEntity<List<Rental>> findAll(){
 		
-		Iterable<RentalDTO> source = service.findAllRentals();
-		List<RentalDTO> target = new ArrayList<>();
+		Iterable<Rental> source = service.findAllRentals();
+		List<Rental> target = new ArrayList<>();
 		source.forEach(target::add);
 		return ResponseEntity.ok(target);
 		
 	}	
 	
 	@ApiOperation(value = "updates rental data", notes = "updates specific rental data")
-	@PutMapping(value = "rentals")
-	public ResponseEntity<RentalDTO> updateRental(@Valid @RequestBody RentalRequestDTO request){	
+	@PutMapping(value = "rentals/{rentalsId}")
+	public ResponseEntity<Rental> updateRental( @RequestBody RentalDTO request,@PathVariable("rentalsId") Integer rentalId){	
 		
-		RentalDTO rental = service.updateRental(request);
+		Rental rental = service.updateRental(request,rentalId);
 		return ResponseEntity.ok(rental);
 			
 	}
 	
 	@ApiOperation(value = "checks id there are copys available of the requested book creates rental data", notes = "creates rental data")
 	@PostMapping(value = "rentals")
-	public ResponseEntity<RentalDTO> createRental(@Valid @RequestBody RentalRequestDTO request) {
+	public ResponseEntity<Rental> createRental( @RequestBody RentalDTO request) {
 		
 		
-		RentalDTO rental = service.addRental(request);
+		Rental rental = service.addRental(request);
 		return ResponseEntity.ok(rental);
 		
 	}

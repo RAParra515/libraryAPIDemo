@@ -1,9 +1,10 @@
 package com.codmind.swaggerapi.repository;
 
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
 
-import com.codmind.swaggerapi.dto.RentalDTO;
-
-public interface RentalRepository extends CrudRepository< RentalDTO, Integer> {
+import com.codmind.swaggerapi.entity.Rental;
+@Repository
+public interface RentalRepository extends CrudRepository< Rental, Integer> {
 
 }
