@@ -1,66 +1,24 @@
 package com.codmind.swaggerapi.dto;
 
-import java.util.Date;
+import java.io.Serializable;
+import java.time.LocalDate;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 
-@Entity
-@Table(name="RENTAL")
-public class RentalDto {
+import io.swagger.annotations.ApiParam;
+import lombok.Data;
+
+
+@Data
+public class RentalDTO implements Serializable {
 	
-
-	  @Id
-	  @GeneratedValue(strategy=GenerationType.AUTO)
-	  private Long id;
-	  public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	private Long book_id;
-	  private Date start;
-	  private Date end;
-
-	  protected RentalDto() {}
-
-	  public RentalDto(Long id, Long book_id,Date start,Date end) {
-		this.setId(id);
-	    this.setBook_id(book_id);
-	    this.setStart(start);
-	    this.setEnd(end);
-	  }
-
-	public Long getBook_id() {
-		return book_id;
-	}
-
-	public void setBook_id(Long book_id) {
-		this.book_id = book_id;
-	}
-
-	public Date getStart() {
-		return start;
-	}
-
-	public void setStart(Date start) {
-		this.start = start;
-	}
-
-	public Date getEnd() {
-		return end;
-	}
-
-	public void setEnd(Date end) {
-		this.end = end;
-	}
-
+	private static final long serialVersionUID = -1328448104681778785L;
 	
+	@ApiParam(name="Identificador del Libro", value="Identificador del Libro prestado")
+	@NotNull( message = "{rental.bookid.notnull}")	
+	private Integer book_id;	
+	@ApiParam(name="Fecha Fin Prestamo (yyyy-mm-dd)", value="Fecha finalizacion prestamo (yyyy-mm-dd)")
+	@NotNull( message = "{rental.end.notnull}")	
+	private String end;
 
 }

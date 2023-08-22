@@ -1,63 +1,28 @@
 package com.codmind.swaggerapi.dto;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import java.io.Serializable;
 
-@Entity
-@Table(name="CUSTOMER")
-public class CustomerDTO {	
+import javax.validation.constraints.NotNull;
 
-	  @Id
-	  //@GeneratedValue(strategy=GenerationType.AUTO)
-	  private Integer id;
-	  private String name;
-	  private String lastName;
-	  private String address;
+import io.swagger.annotations.ApiParam;
+import lombok.Data;
 
-	  protected CustomerDTO() {}
 
-	  public CustomerDTO(String name, String lastName,String address) {
-	    this.setName(name);
-	    this.setLastName(lastName);
-	    this.setAddress(address);
-	  }
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getLastName() {
-		return lastName;
-	}
-
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
-	}
-
-	public String getAddress() {
-		return address;
-	}
-
-	public void setAddress(String address) {
-		this.address = address;
-	}
-
-	public Integer getId() {
-		return id;
-	}
-
-	public void setId(Integer id) {
-		this.id = id;
-	}
-
-	 
+@Data
+public class CustomerDTO implements Serializable{
+	
+	private static final long serialVersionUID = 7942618416814516305L;
+	
+	@ApiParam(name="Nombre", value="Nombre del cliente")
+	@NotNull	
+	@NotNull(message = "{customer.name.notnull}")
+	private String name;
+	@ApiParam(name="Apellido", value="Apellido del cliente")
+	@NotNull(message = "{customer.lastname.notnull}")	
+	private String lastName;	  
+	@ApiParam(name="Dirección", value="Dirección del domicilio del cliente")	
+	@NotNull(message ="{customer.address.notnull}")
+	private String address;	
 	
 }
 

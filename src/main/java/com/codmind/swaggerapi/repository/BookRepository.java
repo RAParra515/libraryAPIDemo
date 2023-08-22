@@ -1,8 +1,12 @@
 package com.codmind.swaggerapi.repository;
 
 import org.springframework.data.repository.CrudRepository;
-import com.codmind.swaggerapi.dto.BookDTO;
+import org.springframework.stereotype.Repository;
 
-public interface BookRepository extends CrudRepository<BookDTO, Integer>{
+import com.codmind.swaggerapi.dto.BookDTO;
+import com.codmind.swaggerapi.entity.Book;
+
+@Repository
+public interface BookRepository extends CrudRepository<Book, Integer>{
 
 }
